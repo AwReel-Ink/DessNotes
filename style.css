@@ -170,3 +170,12 @@ label input[type=checkbox]{margin-right:5px;accent-color:var(--accent)}
   transform-origin:0 0;
   z-index:50;
 }
+
+.brand-version {
+  display: block;
+  font-size: 9px;
+  font-weight: normal;
+  opacity: 0.5;
+  letter-spacing: 0.3px;
+  margin-top: 1px;
+}
