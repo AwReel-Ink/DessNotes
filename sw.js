@@ -1,4 +1,4 @@
-const CACHE = 'dessnotes-v1';
+const CACHE = 'dessnotes-v1.0.0';
 const ASSETS = [
   './',
   './index.html',
