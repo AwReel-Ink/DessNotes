@@ -1,0 +1,172 @@
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#1e1e1e;--bg2:#252525;--bg3:#2d2d2d;--bg4:#3a3a3a;
+  --fg:#e0e0e0;--fg2:#a0a0a0;--accent:#00d9ff;--danger:#ff4060;
+  --border:#404040;--hover:#383838;
+}
+html,body{height:100%;width:100%;overflow:hidden;background:var(--bg);color:var(--fg);
+  font-family:system-ui,Segoe UI,Roboto,sans-serif;font-size:13px;user-select:none}
+button{background:var(--bg3);color:var(--fg);border:1px solid var(--border);
+  padding:6px 10px;border-radius:4px;cursor:pointer;font-size:13px;transition:.15s}
+button:hover{background:var(--hover);border-color:var(--accent)}
+button:active{transform:scale(.96)}
+button.active{background:var(--accent);color:#000;border-color:var(--accent)}
+hr{border:none;border-top:1px solid var(--border);margin:6px 4px}
+input[type=range]{width:100%;accent-color:var(--accent)}
+input[type=color]{width:100%;height:30px;border:1px solid var(--border);background:none;cursor:pointer}
+input[type=number],select{width:100%;background:var(--bg3);color:var(--fg);
+  border:1px solid var(--border);padding:4px;border-radius:3px}
+label{display:block;margin:6px 0;font-size:12px;color:var(--fg2)}
+label input[type=checkbox]{margin-right:5px;accent-color:var(--accent)}
+
+#topbar{display:flex;align-items:center;gap:10px;padding:6px 10px;background:var(--bg2);
+  border-bottom:1px solid var(--border);height:46px;flex-wrap:wrap}
+.brand{font-weight:bold;color:var(--accent);font-size:16px;margin-right:10px}
+.menu,.undo{display:flex;gap:4px;flex-wrap:wrap}
+.undo{margin-left:auto}
+
+#workspace{display:flex;height:calc(100% - 46px);width:100%}
+
+#toolbar{width:54px;background:var(--bg2);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;align-items:center;padding:6px 0;gap:4px;overflow-y:auto}
+#toolbar button{width:42px;height:42px;padding:0;font-size:18px;display:flex;
+  align-items:center;justify-content:center}
+#toolbar hr{width:80%}
+
+#canvasArea{flex:1;display:flex;flex-direction:column;background:#111;position:relative;overflow:hidden}
+#canvasWrap{flex:1;position:relative;overflow:auto;display:flex;align-items:center;justify-content:center;
+  background-image:linear-gradient(45deg,#2a2a2a 25%,transparent 25%,transparent 75%,#2a2a2a 75%),
+                   linear-gradient(45deg,#2a2a2a 25%,transparent 25%,transparent 75%,#2a2a2a 75%);
+  background-size:20px 20px;background-position:0 0,10px 10px;background-color:#1a1a1a}
+#mainCanvas{box-shadow:0 0 30px rgba(0,0,0,.6);background:transparent;display:block;
+  background-image:linear-gradient(45deg,#888 25%,transparent 25%,transparent 75%,#888 75%),
+                   linear-gradient(45deg,#888 25%,transparent 25%,transparent 75%,#888 75%);
+  background-size:16px 16px;background-position:0 0,8px 8px;background-color:#bbb}
+#overlay{position:absolute;top:0;left:0;pointer-events:none}
+#statusBar{height:24px;background:var(--bg2);border-top:1px solid var(--border);
+  display:flex;justify-content:space-between;padding:0 10px;align-items:center;font-size:11px;color:var(--fg2)}
+
+#rightPanel{width:260px;background:var(--bg2);border-left:1px solid var(--border);
+  overflow-y:auto;display:flex;flex-direction:column}
+.panel{padding:10px;border-bottom:1px solid var(--border)}
+.panel h3{font-size:12px;text-transform:uppercase;color:var(--fg2);margin-bottom:8px;letter-spacing:1px}
+
+#colorPresets{display:flex;gap:5px;margin:6px 0;flex-wrap:wrap}
+#colorPresets span{width:22px;height:22px;border-radius:50%;cursor:pointer;
+  border:2px solid var(--border);transition:.15s}
+#colorPresets span:hover{transform:scale(1.15);border-color:var(--accent)}
+
+#layersList{list-style:none;max-height:280px;overflow-y:auto;border:1px solid var(--border);
+  border-radius:4px;background:var(--bg)}
+#layersList li{display:flex;align-items:center;padding:6px 8px;gap:6px;
+  border-bottom:1px solid var(--border);cursor:pointer}
+#layersList li:hover{background:var(--bg3)}
+#layersList li.selected{background:rgba(0,217,255,.15);border-left:3px solid var(--accent)}
+#layersList li .vis{cursor:pointer;font-size:14px}
+#layersList li .name{flex:1;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#layersList li .name[contenteditable=true]{background:var(--bg3);outline:1px solid var(--accent);padding:2px}
+#layersList li .thumb{width:24px;height:24px;border:1px solid var(--border);
+  background:#333;border-radius:2px;flex-shrink:0}
+
+.layerActions{display:flex;gap:4px;margin-top:8px}
+.layerActions button{flex:1;padding:5px;font-size:14px}
+
+/* Poignées de transformation */
+.handle{position:absolute;width:12px;height:12px;background:var(--accent);
+  border:2px solid #fff;border-radius:50%;pointer-events:auto;cursor:nwse-resize;z-index:10}
+.handle.rot{background:#ffcc00;cursor:grab;border-radius:50%}
+.bbox{position:absolute;border:1.5px dashed var(--accent);pointer-events:none;z-index:9}
+
+/* Zone texte editable */
+.textEdit{position:absolute;background:rgba(0,0,0,.5);border:1px dashed var(--accent);
+  outline:none;color:#fff;padding:4px;min-width:50px;z-index:20;white-space:pre-wrap}
+
+/* Crop overlay */
+#cropOverlay{position:absolute;inset:0;pointer-events:none;z-index:50}
+#cropOverlay.hidden{display:none}
+#cropBox{position:absolute;border:2px dashed var(--accent);
+  background:rgba(0,217,255,.1);pointer-events:auto;cursor:move}
+#cropActions{position:absolute;top:10px;left:50%;transform:translateX(-50%);
+  display:flex;gap:8px;pointer-events:auto;background:var(--bg2);
+  padding:6px;border-radius:6px;border:1px solid var(--border)}
+
+#toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);
+  background:var(--bg3);border:1px solid var(--accent);padding:10px 20px;
+  border-radius:6px;opacity:0;transition:.3s;pointer-events:none;z-index:1000}
+#toast.show{opacity:1}
+
+.mobileToggle{display:none;position:fixed;bottom:15px;right:15px;width:48px;height:48px;
+  border-radius:50%;font-size:20px;z-index:100;background:var(--accent);color:#000}
+
+/* Responsive */
+@media(max-width:900px){
+  #rightPanel{position:fixed;right:0;top:46px;height:calc(100% - 46px);
+    transform:translateX(100%);transition:.3s;z-index:50;width:280px}
+  #rightPanel.open{transform:translateX(0)}
+  .mobileToggle{display:block}
+  #toolbar{width:46px}
+  #toolbar button{width:38px;height:38px;font-size:16px}
+  .menu button,.undo button{padding:4px 6px;font-size:12px}
+  .brand{font-size:14px}
+}
+@media(max-width:600px){
+  #topbar{height:auto;padding:4px}
+  #workspace{height:calc(100% - 80px)}
+}
+
+/* ==== Modale d'aide ==== */
+.modal{
+  position:fixed; inset:0; background:rgba(0,0,0,.75);
+  display:flex; align-items:center; justify-content:center;
+  z-index:1000; padding:20px;
+}
+.modal.hidden{display:none}
+.modal-content{
+  background:#252525; color:#e0e0e0;
+  border:1px solid #444; border-radius:10px;
+  max-width:850px; width:100%; max-height:90vh;
+  display:flex; flex-direction:column;
+  box-shadow:0 10px 40px rgba(0,0,0,.6);
+}
+.modal-header{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:14px 20px; border-bottom:1px solid #444;
+}
+.modal-header h2{margin:0; font-size:18px}
+.modal-close{
+  background:transparent; border:none; color:#aaa;
+  font-size:18px; cursor:pointer; padding:4px 10px;
+}
+.modal-close:hover{color:#fff}
+.modal-body{
+  padding:20px; overflow-y:auto; line-height:1.55;
+}
+.modal-body h3{
+  color:#00d9ff; margin-top:22px; margin-bottom:8px;
+  border-bottom:1px solid #333; padding-bottom:4px;
+}
+.modal-body h3:first-child{margin-top:0}
+.modal-body ul, .modal-body ol{padding-left:22px; margin:6px 0}
+.modal-body li{margin:4px 0}
+.modal-body code{background:#111; padding:1px 6px; border-radius:3px; font-size:90%}
+.modal-body kbd{
+  background:#111; border:1px solid #555; border-bottom-width:2px;
+  border-radius:3px; padding:1px 6px; font-family:monospace; font-size:90%;
+  color:#ffd866;
+}
+.modal-body .shortcuts{
+  width:100%; border-collapse:collapse; margin:8px 0;
+}
+.modal-body .shortcuts td{
+  padding:5px 8px; border-bottom:1px solid #333;
+}
+.modal-body .shortcuts td:nth-child(2),
+.modal-body .shortcuts td:nth-child(4){color:#bbb; font-size:92%}
+
+/* Aperçu de la ligne en cours */
+#lineGuide{
+  position:absolute; pointer-events:none;
+  border-top:2px dashed rgba(200,200,200,.7);
+  transform-origin:0 0;
+  z-index:50;
+}

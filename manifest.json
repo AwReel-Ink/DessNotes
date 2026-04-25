@@ -1,0 +1,17 @@
+{
+  "name": "DessNotes - Éditeur d'annotation",
+  "short_name": "DessNotes",
+  "description": "Éditeur d'images simple pour annoter, dessiner et prendre des notes visuelles.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#1a1a1a",
+  "theme_color": "#1a1a1a",
+  "lang": "fr",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "categories": ["productivity","graphics","utilities"]
+}

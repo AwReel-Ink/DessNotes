@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>DessNotes - Éditeur d'annotation</title>
+<link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1a1a1a">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+</head>
+<body>
+
+<header id="topbar">
+  <div class="brand">🎨 DessNotes</div>
+  <div class="menu">
+    <button id="btnNew" title="Nouveau">📄 Nouveau</button>
+    <button id="btnOpen" title="Ouvrir une image">📂 Ouvrir</button>
+    <button id="btnSaveProject" title="Sauvegarder le projet">💾 Sauver</button>
+    <button id="btnLoadProject" title="Charger un projet">📁 Projet</button>
+    <button id="btnExport" title="Exporter en PNG">🖼️ Export PNG</button>
+    <button id="btnHelp" title="Manuel d'utilisation (F1)">❓ Aide</button>
+    <button id="btnInstall" title="Installer l'application" hidden>⬇️ Installer</button>
+    <button id="btnPrint" title="Imprimer">🖨️ Imprimer</button>
+  </div>
+  <div class="undo">
+    <button id="btnUndo" title="Annuler (Ctrl+Z)">↶</button>
+    <button id="btnRedo" title="Refaire (Ctrl+Y)">↷</button>
+  </div>
+  <input type="file" id="fileInput" accept="image/*,.heic,.heif,.dng" hidden>
+  <input type="file" id="projectInput" accept=".dnotes,.json" hidden>
+</header>
+
+<main id="workspace">
+
+  <aside id="toolbar">
+    <button class="tool active" data-tool="move" title="Déplacer (V)">↔️</button>
+    <button class="tool" data-tool="brush" title="Pinceau (B)">🖌️</button>
+    <button class="tool" data-tool="line" title="Ligne droite (L)">📏</button>
+    <button class="tool" data-tool="eraser" title="Gomme (E)">🧽</button>
+    <button class="tool" data-tool="text" title="Texte (T)">🅣</button>
+    <button class="tool" data-tool="picker" title="Pipette (I)">💧</button>
+    <button class="tool" data-tool="crop" title="Recadrer (C)">✂️</button>
+    <hr>
+    <button id="btnAddLayer" title="Nouveau calque transparent">➕</button>
+    <button id="btnAddImage" title="Ajouter une image en calque">🖼️</button>
+    <hr>
+    <button id="btnRotateL" title="Rotation -90°">⟲</button>
+    <button id="btnRotateR" title="Rotation +90°">⟳</button>
+    <button id="btnFlipH" title="Miroir horizontal">↔</button>
+    <button id="btnFlipV" title="Miroir vertical">↕</button>
+    <hr>
+    <button id="btnZoomIn" title="Zoom +">🔍+</button>
+    <button id="btnZoomOut" title="Zoom -">🔍-</button>
+    <button id="btnZoomFit" title="Ajuster">⛶</button>
+  </aside>
+
+  <section id="canvasArea">
+    <div id="canvasWrap">
+      <canvas id="mainCanvas"></canvas>
+      <div id="overlay"></div>
+    </div>
+    <div id="statusBar">
+      <span id="statusInfo">Prêt</span>
+      <span id="zoomInfo">100%</span>
+    </div>
+  </section>
+
+  <aside id="rightPanel">
+    <div class="panel">
+      <h3>Propriétés outil</h3>
+      <div id="toolProps">
+        <label>Taille <input type="range" id="brushSize" min="1" max="200" value="8"><span id="brushSizeVal">8</span></label>
+        <label>Opacité <input type="range" id="brushOpacity" min="1" max="100" value="100"><span id="brushOpacityVal">100</span></label>
+        <label>Couleur <input type="color" id="brushColor" value="#00d9ff"></label>
+        <div id="colorPresets">
+          <span style="background:#ff0040" data-c="#ff0040"></span>
+          <span style="background:#00d9ff" data-c="#00d9ff"></span>
+          <span style="background:#00ff66" data-c="#00ff66"></span>
+          <span style="background:#ffcc00" data-c="#ffcc00"></span>
+          <span style="background:#ff00ff" data-c="#ff00ff"></span>
+          <span style="background:#ffffff" data-c="#ffffff"></span>
+          <span style="background:#000000" data-c="#000000"></span>
+        </div>
+        <div id="textProps" style="display:none">
+          <label>Police 
+            <select id="textFont">
+              <option>Arial</option><option>Verdana</option>
+              <option>Times New Roman</option><option>Courier New</option>
+              <option>Georgia</option><option>Impact</option>
+            </select>
+          </label>
+          <label>Taille texte <input type="number" id="textSize" min="6" max="300" value="32"></label>
+          <label><input type="checkbox" id="textBold"> Gras</label>
+          <label><input type="checkbox" id="textItalic"> Italique</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Calques</h3>
+      <ul id="layersList"></ul>
+      <div class="layerActions">
+        <button id="btnLayerUp" title="Monter">⬆️</button>
+        <button id="btnLayerDown" title="Descendre">⬇️</button>
+        <button id="btnLayerDup" title="Dupliquer">📋</button>
+        <button id="btnLayerDel" title="Supprimer">🗑️</button>
+      </div>
+      <label>Opacité calque <input type="range" id="layerOpacity" min="0" max="100" value="100"></label>
+    </div>
+  </aside>
+
+</main>
+
+<button id="mobileToggleRight" class="mobileToggle">📐</button>
+
+<div id="cropOverlay" class="hidden">
+  <div id="cropBox"></div>
+  <div id="cropActions">
+    <button id="btnCropApply">✅ Appliquer</button>
+    <button id="btnCropCancel">❌ Annuler</button>
+  </div>
+</div>
+
+<!-- Modale Aide -->
+<div id="helpModal" class="modal hidden">
+  <div class="modal-content">
+    <header class="modal-header">
+      <h2>📖 Manuel d'utilisation - DessNotes</h2>
+      <button id="btnHelpClose" class="modal-close">✖</button>
+    </header>
+    <div class="modal-body">
+
+      <h3>🚀 Démarrage rapide</h3>
+      <p><b>DessNotes</b> est un éditeur d'annotation d'images. Idéal pour prendre des notes visuelles sur des photos (mesures, repères, croquis...).</p>
+      <ol>
+        <li>Cliquez sur <b>📂 Ouvrir</b> ou glissez une image dans la fenêtre.</li>
+        <li>Cliquez sur <b>➕</b> pour ajouter un calque transparent par-dessus.</li>
+        <li>Choisissez un outil (pinceau, ligne, texte...) et annotez.</li>
+        <li>Exportez en <b>🖼️ PNG</b> ou <b>🖨️ Imprimez</b>.</li>
+      </ol>
+
+      <h3>🧰 Outils</h3>
+      <ul class="help-tools">
+        <li><b>↔️ Déplacer (V)</b> — Sélectionnez un calque dans le panneau de droite, puis cliquez-glissez sur le canvas pour le déplacer. Utilisez les <b>poignées</b> aux coins pour redimensionner. La poignée du haut sert à pivoter.</li>
+        <li><b>🖌️ Pinceau (B)</b> — Dessine à main levée. Réglez la <b>taille</b>, la <b>couleur</b> et l'<b>opacité</b> dans le panneau de droite. Choisissez d'abord le calque cible !</li>
+        <li><b>📏 Ligne (L)</b> — Tracez des lignes droites :
+          <ol>
+            <li>Premier clic = point de départ</li>
+            <li>Bougez la souris : un aperçu gris suit le curseur</li>
+            <li>Deuxième clic = valide la ligne définitive</li>
+            <li><kbd>Échap</kbd> ou clic droit = annule</li>
+          </ol>
+          Astuce : maintenez <kbd>Maj</kbd> pour contraindre à 0°, 45° ou 90°.
+        </li>
+        <li><b>🧽 Gomme (E)</b> — Efface sur le calque actif. Utilisez la même taille que le pinceau.</li>
+        <li><b>🅣 Texte (T)</b> — <b>Important, lisez bien :</b>
+          <ol>
+            <li>Sélectionnez l'outil <b>🅣 Texte</b>.</li>
+            <li><b>Cliquez sur le canvas</b> à l'endroit où placer le texte. Une zone est créée avec un texte par défaut.</li>
+            <li>Pour <b>modifier le contenu</b> : repassez en outil <b>↔️ Déplacer (V)</b>, puis <b>double-cliquez</b> sur la zone de texte. Saisissez votre texte et cliquez ailleurs pour valider.</li>
+            <li>Pour <b>déplacer</b> ou <b>redimensionner</b> la zone : outil Déplacer + glissez le calque ou ses poignées.</li>
+            <li>La <b>couleur</b> et la <b>taille</b> du texte se règlent dans le panneau de droite avant la création (ou se modifient ensuite via les contrôles dédiés).</li>
+          </ol>
+        </li>
+        <li><b>💧 Pipette (I)</b> — Cliquez sur une couleur de l'image pour la définir comme couleur active du pinceau.</li>
+        <li><b>✂️ Recadrer (C)</b> — Tracez un rectangle sur l'image, puis validez avec ✓ ou annulez avec ✗. Recadre tout le document.</li>
+      </ul>
+
+      <h3>🗂️ Calques</h3>
+      <ul>
+        <li><b>➕</b> Ajoute un calque transparent vide.</li>
+        <li><b>🖼️</b> Ajoute une nouvelle image en tant que calque.</li>
+        <li><b>👁️</b> Affiche/masque un calque (clic sur l'œil).</li>
+        <li><b>Double-clic</b> sur le nom d'un calque pour le renommer.</li>
+        <li><b>⬆️ ⬇️</b> Réordonner le calque sélectionné.</li>
+        <li><b>📑</b> Dupliquer le calque.</li>
+        <li><b>🗑️</b> Supprimer le calque sélectionné (ou touche <kbd>Suppr</kbd>).</li>
+        <li><b>Opacité</b> : curseur en bas du panneau, agit sur le calque sélectionné.</li>
+      </ul>
+
+      <h3>🔍 Navigation & Zoom</h3>
+      <ul>
+        <li><b>Molette de souris</b> = zoom/dézoom centré sur le curseur.</li>
+        <li><b>Boutons 🔍+ / 🔍-</b> = zoom par paliers.</li>
+        <li><b>Bouton ⤢</b> = ajuste à la fenêtre.</li>
+      </ul>
+
+      <h3>💾 Sauvegarde & Export</h3>
+      <ul>
+        <li><b>💾 Sauver</b> = enregistre un fichier projet <code>.dnotes</code> (réouvrable plus tard avec tous les calques).</li>
+        <li><b>📁 Projet</b> = recharge un fichier <code>.dnotes</code>.</li>
+        <li><b>🖼️ Export PNG</b> = exporte l'image finale aplatie (transparence préservée).</li>
+        <li><b>🖨️ Imprimer</b> = ouvre la boîte de dialogue d'impression.</li>
+        <li><b>Auto-sauvegarde</b> : DessNotes sauve automatiquement votre travail toutes les 30 s. Si vous fermez par accident, vous serez invité à restaurer au prochain démarrage.</li>
+      </ul>
+
+      <h3>⌨️ Raccourcis clavier</h3>
+      <table class="shortcuts">
+        <tr><td><kbd>V</kbd></td><td>Déplacer</td><td><kbd>B</kbd></td><td>Pinceau</td></tr>
+        <tr><td><kbd>L</kbd></td><td>Ligne droite</td><td><kbd>E</kbd></td><td>Gomme</td></tr>
+        <tr><td><kbd>T</kbd></td><td>Texte</td><td><kbd>I</kbd></td><td>Pipette</td></tr>
+        <tr><td><kbd>C</kbd></td><td>Recadrer</td><td><kbd>Suppr</kbd></td><td>Supprimer calque</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd></td><td>Annuler</td><td><kbd>Ctrl</kbd>+<kbd>Y</kbd></td><td>Refaire</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd></td><td>Sauvegarder</td><td><kbd>Ctrl</kbd>+<kbd>O</kbd></td><td>Ouvrir</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>E</kbd></td><td>Export PNG</td><td><kbd>Ctrl</kbd>+<kbd>P</kbd></td><td>Imprimer</td></tr>
+        <tr><td><kbd>Échap</kbd></td><td>Annuler action</td><td><kbd>F1</kbd></td><td>Cette aide</td></tr>
+      </table>
+
+      <h3>💡 Cas d'usage type : annoter une photo</h3>
+      <p><i>Exemple : indiquer la hauteur d'une haie sur une photo.</i></p>
+      <ol>
+        <li>📂 Ouvrir la photo de la haie.</li>
+        <li>➕ Ajouter un calque "Trait actuel".</li>
+        <li>📏 Outil ligne, couleur cyan, tracer un trait vertical de la base au sommet.</li>
+        <li>➕ Ajouter un calque "Texte actuel".</li>
+        <li>🅣 Outil texte, cliquer à côté → revenir en V → double-clic → écrire "2m80".</li>
+        <li>Répéter avec un autre calque en vert pour la hauteur souhaitée "2m".</li>
+        <li>🖼️ Exporter en PNG, ou 💾 sauver le projet pour modifier plus tard.</li>
+      </ol>
+
+      <h3>📱 Installation (PWA)</h3>
+      <p>DessNotes peut être installé comme une application : sur Chrome/Edge, cliquez sur le bouton <b>⬇️ Installer</b> dans la barre supérieure (s'affiche quand l'installation est possible), ou utilisez le menu du navigateur. Sur smartphone : "Ajouter à l'écran d'accueil". Une fois installée, l'app fonctionne <b>hors ligne</b>.</p>
+
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
+<script src="js/history.js"></script>
+<script src="js/render.js"></script>
+<script src="js/layers.js"></script>
+<script src="js/tools.js"></script>
+<script src="js/io.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
