@@ -138,7 +138,7 @@ const Tools = (() => {
       UI.updateOverlay();
     }
     else if(dragMode && dragMode.startsWith('resize')){
-      doResize(p);
+      doResize(p, e);
     }
     else if(dragMode==='rotate'){
       const L = Layers.selected();
@@ -294,20 +294,59 @@ const Tools = (() => {
     e.stopPropagation();
   }
 
-  function doResize(p){
+  function doResize(p, e){
     const L = Layers.selected();
     if(!L) return;
     const dx = p.x - dragStart.x, dy = p.y - dragStart.y;
     const h = dragMode.split('-')[1];
-    let {x,y,w,h:hh} = layerStart;
+    let {x, y, w, h:hh} = layerStart;
+
     if(h.includes('e')) w = layerStart.w + dx;
     if(h.includes('w')){ w = layerStart.w - dx; x = layerStart.x + dx; }
     if(h.includes('s')) hh = layerStart.h + dy;
     if(h.includes('n')){ hh = layerStart.h - dy; y = layerStart.y + dy; }
-    if(w<10) w=10; if(hh<10) hh=10;
-    L.x=x; L.y=y; L.w=w; L.h=hh;
+
+    // === Verrouillage des proportions (Alt ou Maj) ===
+    const lockRatio = e && (e.altKey || e.shiftKey);
+    if(lockRatio && layerStart.w > 0 && layerStart.h > 0){
+      const ratio = layerStart.w / layerStart.h;
+      const isCorner = h.length === 2; // nw, ne, sw, se
+      const isSide   = h.length === 1; // n, s, e, w
+
+      if(isCorner){
+        // On aligne la plus grande variation relative
+        const rw = Math.abs(w / layerStart.w);
+        const rh = Math.abs(hh / layerStart.h);
+        if(rw > rh){
+          const newH = Math.abs(w) / ratio * Math.sign(hh || 1);
+          if(h.includes('n')) y = layerStart.y + (layerStart.h - newH);
+          hh = newH;
+        } else {
+          const newW = Math.abs(hh) * ratio * Math.sign(w || 1);
+          if(h.includes('w')) x = layerStart.x + (layerStart.w - newW);
+          w = newW;
+        }
+      }
+      else if(isSide){
+        if(h === 'e' || h === 'w'){
+          const newH = Math.abs(w) / ratio;
+          // recentrage vertical pour garder le calque équilibré
+          y = layerStart.y + (layerStart.h - newH) / 2;
+          hh = newH;
+        } else { // n / s
+          const newW = Math.abs(hh) * ratio;
+          x = layerStart.x + (layerStart.w - newW) / 2;
+          w = newW;
+        }
+      }
+    }
+
+    if(w < 10) w = 10;
+    if(hh < 10) hh = 10;
+    L.x = x; L.y = y; L.w = w; L.h = hh;
     Render.requestRender(); UI.updateOverlay();
   }
+
 
   function onDblClick(e){
     const p = Render.clientToDoc(e.clientX, e.clientY);
